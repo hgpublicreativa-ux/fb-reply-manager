@@ -6,7 +6,7 @@ export function getFacebookAuthUrl(): string {
   const params = new URLSearchParams({
     client_id: process.env.FACEBOOK_APP_ID!,
     redirect_uri: `${process.env.BACKEND_URL}/api/auth/facebook/callback`,
-    scope: 'email,pages_show_list,pages_read_engagement,pages_manage_posts,pages_read_user_content',
+    scope: 'email,pages_show_list,pages_read_engagement,pages_manage_posts,pages_read_user_content,publish_pages,pages_manage_metadata',
     response_type: 'code',
   });
   return `https://www.facebook.com/v21.0/dialog/oauth?${params.toString()}`;
