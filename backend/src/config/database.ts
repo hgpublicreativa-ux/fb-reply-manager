@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { Pool, QueryResultRow } from 'pg';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -16,7 +16,8 @@ pool.on('error', (err) => {
   process.exit(-1);
 });
 
-export const query = <T = Record<string, unknown>>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const query = <T extends QueryResultRow = QueryResultRow>(
   text: string,
-  params?: (string | number | boolean | null | Date)[]
-) => pool.query<T>(text, params);
+  params?: unknown[]
+) => pool.query<T>(text, params as unknown[]);
