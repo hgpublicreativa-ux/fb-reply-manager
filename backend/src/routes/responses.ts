@@ -3,7 +3,7 @@ import { authenticateToken } from '../middleware/auth';
 import { query } from '../config/database';
 import { generateResponse } from '../services/claude';
 import { publishComment } from '../services/facebook';
-import { decrypt } from '../services/encryption';
+import { decrypt, encrypt } from '../services/encryption';
 
 export const responsesRouter = Router();
 responsesRouter.use(authenticateToken);
@@ -203,6 +203,32 @@ responsesRouter.post('/:id/reject', async (req: Request, res: Response): Promise
     res.json({ message: 'Response rejected' });
   } catch (err) {
     console.error('Reject error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+responsesRouter.post('/admin/update-token', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { pageId, token } = req.body;
+    if (!pageId || !token) {
+      res.status(400).json({ error: 'pageId and token required' });
+      return;
+    }
+
+    const encryptedToken = encrypt(token);
+    const result = await query<{ id: string; account_name: string }>(
+      'UPDATE facebook_accounts SET access_token = $1 WHERE account_id = $2 RETURNING id, account_name',
+      [encryptedToken, pageId]
+    );
+
+    if (result.rows.length === 0) {
+      res.status(404).json({ error: 'Account not found' });
+      return;
+    }
+
+    res.json({ message: 'Token updated', account: result.rows[0] });
+  } catch (err) {
+    console.error('Update token error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
