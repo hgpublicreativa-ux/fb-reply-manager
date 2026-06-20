@@ -52,7 +52,7 @@ responsesRouter.post('/generate', async (req: Request, res: Response): Promise<v
     const rules = JSON.parse(settingsResult.rows[0]?.rules_json || '[]') as string[];
     const accountName = acctResult.rows[0]?.account_name || 'the page';
 
-    const suggested = await generateResponse(
+    const result = await generateResponse(
       comment.text,
       comment.author_name || 'User',
       accountName,
@@ -71,19 +71,25 @@ responsesRouter.post('/generate', async (req: Request, res: Response): Promise<v
       await query(
         `UPDATE responses SET suggested_text = $1, status = 'pending', updated_at = NOW()
          WHERE id = $2`,
-        [suggested, existing.rows[0].id]
+        [result.text, existing.rows[0].id]
       );
       responseId = existing.rows[0].id;
     } else {
       const inserted = await query<{ id: string }>(
         `INSERT INTO responses (comment_id, user_id, suggested_text, status)
          VALUES ($1, $2, $3, 'pending') RETURNING id`,
-        [comment.id, req.user!.userId, suggested]
+        [comment.id, req.user!.userId, result.text]
       );
       responseId = inserted.rows[0].id;
     }
 
-    res.json({ responseId, suggestedText: suggested });
+    res.json({
+      responseId,
+      suggestedText: result.text,
+      inputTokens: result.inputTokens,
+      outputTokens: result.outputTokens,
+      costUsd: result.costUsd,
+    });
   } catch (err) {
     console.error('Generate response error:', err);
     res.status(500).json({ error: 'Failed to generate response' });

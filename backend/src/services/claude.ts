@@ -2,7 +2,10 @@ import OpenAI from 'openai';
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Instrucciones de personalidad por tono (en español, pensado para farándula y política)
+// gpt-4o-mini pricing (USD per token)
+const INPUT_COST_PER_TOKEN = 0.15 / 1_000_000;
+const OUTPUT_COST_PER_TOKEN = 0.60 / 1_000_000;
+
 const TONE_PROFILES: Record<string, string> = {
   comedy:
     'Cordial pero MUY divertido. Humor de farándula y chisme: ironía ligera, comentarios ingeniosos, ocurrentes y chistosos, con exageración cómica y picardía sana. Tu objetivo es sacar una sonrisa o una carcajada. Juega con dobles sentidos suaves. Nunca insultes ni ofendas a nadie: la gracia va con cariño, no con maldad.',
@@ -17,13 +20,20 @@ const TONE_PROFILES: Record<string, string> = {
   empathetic: 'Empático y comprensivo, con calidez y cercanía.',
 };
 
+export interface GenerateResult {
+  text: string;
+  inputTokens: number;
+  outputTokens: number;
+  costUsd: number;
+}
+
 export async function generateResponse(
   commentText: string,
   authorName: string,
   accountName: string,
   tone: string = 'comedy',
   rules: string[] = []
-): Promise<string> {
+): Promise<GenerateResult> {
   const toneInstructions = TONE_PROFILES[tone] || TONE_PROFILES.comedy;
 
   const rulesText =
@@ -62,5 +72,10 @@ Reglas generales:
 
   const text = completion.choices[0]?.message?.content;
   if (!text) throw new Error('No response from OpenAI');
-  return text.trim();
+
+  const inputTokens = completion.usage?.prompt_tokens ?? 0;
+  const outputTokens = completion.usage?.completion_tokens ?? 0;
+  const costUsd = inputTokens * INPUT_COST_PER_TOKEN + outputTokens * OUTPUT_COST_PER_TOKEN;
+
+  return { text: text.trim(), inputTokens, outputTokens, costUsd };
 }

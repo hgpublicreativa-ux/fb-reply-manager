@@ -16,12 +16,14 @@ export function ResponseModal({ comment, onClose, onUpdate }: ResponseModalProps
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState('');
   const [responseId, setResponseId] = useState<string | null>(null);
+  const [lastCost, setLastCost] = useState<{ usd: number; inputTokens: number; outputTokens: number } | null>(null);
 
   useEffect(() => {
     if (comment) {
       setEditedText(comment.actual_text || comment.suggested_text || '');
       setResponseId(comment.response_id);
       setError('');
+      setLastCost(null);
     }
   }, [comment]);
 
@@ -35,6 +37,9 @@ export function ResponseModal({ comment, onClose, onUpdate }: ResponseModalProps
       const res = await responsesApi.generate(comment.id);
       setEditedText(res.data.suggestedText);
       setResponseId(res.data.responseId);
+      if (res.data.costUsd !== undefined) {
+        setLastCost({ usd: res.data.costUsd, inputTokens: res.data.inputTokens, outputTokens: res.data.outputTokens });
+      }
     } catch {
       setError('Failed to generate response. Check your Claude API key.');
     } finally {
@@ -164,7 +169,20 @@ export function ResponseModal({ comment, onClose, onUpdate }: ResponseModalProps
               className="input resize-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm"
               placeholder="Escribe tu respuesta o usa Auto-generate con IA..."
             />
-            <p className="text-xs text-gray-400 mt-1 text-right">{editedText.length} caracteres</p>
+            <div className="flex items-center justify-between mt-1">
+              {lastCost ? (
+                <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Costo: ${lastCost.usd.toFixed(5)} USD
+                  <span className="text-gray-400 font-normal">({lastCost.inputTokens}+{lastCost.outputTokens} tokens)</span>
+                </span>
+              ) : (
+                <span />
+              )}
+              <span className="text-xs text-gray-400">{editedText.length} caracteres</span>
+            </div>
           </div>
 
           {/* Action buttons */}

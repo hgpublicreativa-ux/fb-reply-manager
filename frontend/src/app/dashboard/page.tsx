@@ -21,6 +21,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [selectedComment, setSelectedComment] = useState<Comment | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const LIMIT = 20;
 
@@ -57,6 +58,7 @@ export default function DashboardPage() {
       });
       setComments(res.data.comments);
       setTotal(res.data.total);
+      setLastUpdated(new Date());
     } catch (err) {
       console.error('Fetch comments error:', err);
     } finally {
@@ -91,6 +93,16 @@ export default function DashboardPage() {
   useEffect(() => {
     if (activeAccount) fetchComments();
   }, [page]);
+
+  // Silent auto-refresh every 2 minutes — picks up new comments without user action
+  useEffect(() => {
+    if (!activeAccount) return;
+    const interval = setInterval(() => {
+      fetchComments();
+      fetchStats();
+    }, 2 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [activeAccount, fetchComments, fetchStats]);
 
   function handleAccountChange(account: FacebookAccount) {
     setActiveAccount(account);
@@ -140,7 +152,14 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
               <div className="min-w-0">
                 <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">{activeAccount.account_name}</h1>
-                <p className="text-gray-500 text-xs sm:text-sm mt-0.5">Facebook Comments Dashboard</p>
+                <p className="text-gray-500 text-xs sm:text-sm mt-0.5">
+                  Facebook Comments Dashboard
+                  {lastUpdated && (
+                    <span className="ml-2 text-gray-400">
+                      · actualizado {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  )}
+                </p>
               </div>
               <button
                 onClick={handleSync}

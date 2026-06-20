@@ -10,6 +10,9 @@ import { authRouter } from './routes/auth';
 import { accountsRouter } from './routes/accounts';
 import { commentsRouter } from './routes/comments';
 import { responsesRouter } from './routes/responses';
+import { query } from './config/database';
+import { getPageComments } from './services/facebook';
+import { decrypt } from './services/encryption';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -62,6 +65,49 @@ app.use((_req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
+  startAutoSync();
 });
+
+async function syncAllAccounts() {
+  try {
+    const accounts = await query<{ id: string; account_id: string; access_token: string }>(
+      'SELECT id, account_id, access_token FROM facebook_accounts'
+    );
+    for (const account of accounts.rows) {
+      try {
+        const token = decrypt(account.access_token);
+        const fbComments = await getPageComments(account.account_id, token);
+        for (const comment of fbComments) {
+          await query(
+            `INSERT INTO comments (facebook_account_id, comment_id, post_id, text, author_name, author_id, created_at, post_message, post_permalink)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+             ON CONFLICT (comment_id) DO NOTHING`,
+            [
+              account.id,
+              comment.id,
+              comment.post_id || null,
+              comment.message || '',
+              comment.from?.name || null,
+              comment.from?.id || null,
+              new Date(comment.created_time),
+              comment.post_message || null,
+              comment.post_permalink || null,
+            ]
+          );
+        }
+      } catch (err) {
+        console.error(`Auto-sync failed for account ${account.account_id}:`, err);
+      }
+    }
+  } catch (err) {
+    console.error('Auto-sync error:', err);
+  }
+}
+
+function startAutoSync() {
+  // Run immediately on start, then every 5 minutes
+  syncAllAccounts();
+  setInterval(syncAllAccounts, 5 * 60 * 1000);
+}
 
 export default app;
