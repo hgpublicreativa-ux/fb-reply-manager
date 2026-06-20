@@ -48,7 +48,7 @@ export async function getPageComments(
   pageId: string,
   pageAccessToken: string,
   since?: number
-): Promise<Array<{ id: string; message: string; from?: { name: string; id: string }; created_time: string; post_id?: string }>> {
+): Promise<Array<{ id: string; message: string; from?: { name: string; id: string }; created_time: string; post_id?: string; post_message?: string; post_permalink?: string }>> {
   const params: Record<string, string | number> = {
     fields: 'id,message,from,created_time,post_id',
     access_token: pageAccessToken,
@@ -60,18 +60,18 @@ export async function getPageComments(
   try {
     const feedResponse = await axios.get(`${FB_BASE}/${pageId}/feed`, {
       params: {
-        fields: 'id,comments{id,message,from.fields(name,id),created_time}',
+        fields: 'id,story,link,comments{id,message,from.fields(name,id),created_time}',
         access_token: pageAccessToken,
         limit: 25,
       },
     });
 
-    const comments: Array<{ id: string; message: string; from?: { name: string; id: string }; created_time: string; post_id?: string }> = [];
+    const comments: Array<{ id: string; message: string; from?: { name: string; id: string }; created_time: string; post_id?: string; post_message?: string; post_permalink?: string }> = [];
 
     for (const post of feedResponse.data.data || []) {
       if (post.comments?.data) {
         for (const comment of post.comments.data) {
-          comments.push({ ...comment, post_id: post.id });
+          comments.push({ ...comment, post_id: post.id, post_message: post.story || post.message, post_permalink: post.link });
         }
       }
     }

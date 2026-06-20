@@ -206,3 +206,26 @@ responsesRouter.post('/:id/reject', async (req: Request, res: Response): Promise
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// Temporary migration endpoint - remove after use
+responsesRouter.post('/admin/migrate-post-info', async (req: Request, res: Response): Promise<void> => {
+  try {
+    await query(`
+      ALTER TABLE comments 
+        ADD COLUMN IF NOT EXISTS post_message TEXT,
+        ADD COLUMN IF NOT EXISTS post_permalink TEXT;
+      
+      CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id);
+    `);
+    
+    const result = await query(`
+      SELECT column_name FROM information_schema.columns 
+      WHERE table_name='comments' ORDER BY ordinal_position
+    `);
+    
+    res.json({ message: 'Migration complete', columns: result.rows.length });
+  } catch (err) {
+    console.error('Migration error:', err);
+    res.status(500).json({ error: 'Migration failed', details: String(err) });
+  }
+});

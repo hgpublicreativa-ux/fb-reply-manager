@@ -47,13 +47,15 @@ commentsRouter.get('/', async (req: Request, res: Response): Promise<void> => {
       author_name: string | null;
       author_id: string | null;
       created_at: Date;
+      post_message: string | null;
+      post_permalink: string | null;
       response_id: string | null;
       suggested_text: string | null;
       actual_text: string | null;
       status: string | null;
     }>(
       `SELECT
-         c.id, c.comment_id, c.post_id, c.text, c.author_name, c.author_id, c.created_at,
+         c.id, c.comment_id, c.post_id, c.text, c.author_name, c.author_id, c.created_at, c.post_message, c.post_permalink,
          r.id AS response_id, r.suggested_text, r.actual_text, r.status
        FROM comments c
        LEFT JOIN responses r ON r.comment_id = c.id
@@ -105,8 +107,8 @@ commentsRouter.post('/sync/:accountId', async (req: Request, res: Response): Pro
     let added = 0;
     for (const comment of fbComments) {
       const result = await query(
-        `INSERT INTO comments (facebook_account_id, comment_id, post_id, text, author_name, author_id, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `INSERT INTO comments (facebook_account_id, comment_id, post_id, text, author_name, author_id, created_at, post_message, post_permalink)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          ON CONFLICT (comment_id) DO NOTHING`,
         [
           account.id,
@@ -116,6 +118,8 @@ commentsRouter.post('/sync/:accountId', async (req: Request, res: Response): Pro
           comment.from?.name || null,
           comment.from?.id || null,
           new Date(comment.created_time),
+          comment.post_message || null,
+          comment.post_permalink || null,
         ]
       );
       if (result.rowCount && result.rowCount > 0) added++;
