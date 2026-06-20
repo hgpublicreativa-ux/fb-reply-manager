@@ -49,19 +49,17 @@ type FBComment = { id: string; message: string; from?: { name: string; id: strin
 export async function getPageComments(
   pageId: string,
   pageAccessToken: string,
-  since?: number
+  _since?: number
 ): Promise<FBComment[]> {
   try {
-    // Default: last 24 hours if no since timestamp given
-    const sinceTs = since ?? Math.floor(Date.now() / 1000) - 24 * 60 * 60;
-
+    // Fetch the 50 most recent posts (no `since` filter — a post published days ago
+    // can still receive new comments today, so filtering by post age misses them).
+    // ON CONFLICT DO NOTHING in the DB handles deduplication efficiently.
     const feedResponse = await axios.get(`${FB_BASE}/${pageId}/feed`, {
       params: {
-        // comments.limit(100) gets up to 100 comments per post (FB default is 25)
         fields: 'id,story,message,link,comments.limit(100){id,message,from.fields(name,id),created_time}',
         access_token: pageAccessToken,
         limit: 50,
-        since: sinceTs,
       },
     });
 
@@ -81,7 +79,8 @@ export async function getPageComments(
     }
 
     return comments;
-  } catch {
+  } catch (err) {
+    console.error(`getPageComments error for page ${pageId}:`, err);
     return [];
   }
 }

@@ -69,16 +69,20 @@ app.listen(PORT, '0.0.0.0', () => {
 });
 
 async function syncAllAccounts() {
+  const start = Date.now();
   try {
     const accounts = await query<{ id: string; account_id: string; access_token: string }>(
       'SELECT id, account_id, access_token FROM facebook_accounts'
     );
+    console.log(`[auto-sync] running for ${accounts.rows.length} accounts`);
+    let totalAdded = 0;
     for (const account of accounts.rows) {
       try {
         const token = decrypt(account.access_token);
         const fbComments = await getPageComments(account.account_id, token);
+        let added = 0;
         for (const comment of fbComments) {
-          await query(
+          const r = await query(
             `INSERT INTO comments (facebook_account_id, comment_id, post_id, text, author_name, author_id, created_at, post_message, post_permalink)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
              ON CONFLICT (comment_id) DO NOTHING`,
@@ -94,18 +98,21 @@ async function syncAllAccounts() {
               comment.post_permalink || null,
             ]
           );
+          if (r.rowCount && r.rowCount > 0) added++;
         }
+        totalAdded += added;
+        console.log(`[auto-sync] ${account.account_id}: ${fbComments.length} fetched, ${added} new`);
       } catch (err) {
-        console.error(`Auto-sync failed for account ${account.account_id}:`, err);
+        console.error(`[auto-sync] failed for account ${account.account_id}:`, err);
       }
     }
+    console.log(`[auto-sync] done in ${Date.now() - start}ms — total new: ${totalAdded}`);
   } catch (err) {
-    console.error('Auto-sync error:', err);
+    console.error('[auto-sync] error:', err);
   }
 }
 
 function startAutoSync() {
-  // Run immediately on start, then every 5 minutes
   syncAllAccounts();
   setInterval(syncAllAccounts, 5 * 60 * 1000);
 }
