@@ -130,60 +130,67 @@ export default function DashboardPage() {
         onAccountChange={handleAccountChange}
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {!activeAccount ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
           </div>
         ) : (
           <>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">{activeAccount.account_name}</h1>
-                <p className="text-gray-500 text-sm mt-0.5">Facebook Comments Dashboard</p>
+            <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">{activeAccount.account_name}</h1>
+                <p className="text-gray-500 text-xs sm:text-sm mt-0.5">Facebook Comments Dashboard</p>
               </div>
               <button
                 onClick={handleSync}
                 disabled={syncing}
-                className="btn-secondary flex items-center gap-2 self-start sm:self-auto"
+                className="btn-secondary flex items-center gap-1.5 flex-shrink-0 text-sm px-3 py-1.5"
               >
                 <svg className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-                {syncing ? 'Syncing...' : 'Sync Comments'}
+                <span className="hidden xs:inline sm:inline">{syncing ? 'Syncing...' : 'Sync'}</span>
               </button>
             </div>
 
             {stats && (
-              <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
                 {[
-                  { label: 'Total Comments', value: stats.totalComments, color: 'text-gray-900', bg: 'bg-gray-50' },
-                  { label: 'Responded', value: stats.responded, color: 'text-green-700', bg: 'bg-green-50' },
-                  { label: 'Pending', value: stats.pending, color: 'text-yellow-700', bg: 'bg-yellow-50' },
+                  { label: 'Total', labelFull: 'Total Comments', value: stats.totalComments, color: 'text-gray-900', bg: 'bg-gray-50' },
+                  { label: 'Respondidos', labelFull: 'Responded', value: stats.responded, color: 'text-green-700', bg: 'bg-green-50' },
+                  { label: 'Pendientes', labelFull: 'Pending', value: stats.pending, color: 'text-yellow-700', bg: 'bg-yellow-50' },
                 ].map((stat) => (
-                  <div key={stat.label} className={`card p-4 ${stat.bg}`}>
-                    <p className="text-sm text-gray-500 font-medium">{stat.label}</p>
-                    <p className={`text-2xl font-bold mt-1 ${stat.color}`}>{stat.value}</p>
+                  <div key={stat.label} className={`card p-2.5 sm:p-4 ${stat.bg}`}>
+                    <p className="text-xs sm:text-sm text-gray-500 font-medium leading-tight">
+                      <span className="sm:hidden">{stat.label}</span>
+                      <span className="hidden sm:inline">{stat.labelFull}</span>
+                    </p>
+                    <p className={`text-xl sm:text-2xl font-bold mt-1 ${stat.color}`}>{stat.value}</p>
                   </div>
                 ))}
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row gap-3 mb-6">
-              <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
-                {(['all', 'pending', 'responded'] as FilterType[]).map((f) => (
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <div className="flex gap-1 bg-gray-100 p-1 rounded-lg self-start">
+                {([
+                  { key: 'all', label: 'Todos' },
+                  { key: 'pending', label: 'Pendientes' },
+                  { key: 'responded', label: 'Respondidos' },
+                ] as { key: FilterType; label: string }[]).map(({ key: f, label }) => (
                   <button
                     key={f}
                     onClick={() => { setFilter(f); setPage(1); }}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium capitalize transition-colors ${
+                    className={`px-2.5 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                       filter === f ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
-                    {f}
+                    {label}
                   </button>
                 ))}
               </div>
-              <div className="relative flex-1 max-w-md">
+              <div className="relative flex-1 sm:max-w-md">
                 <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
@@ -235,7 +242,7 @@ export default function DashboardPage() {
             )}
 
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-6">
+              <div className="flex items-center justify-center gap-2 mt-4 sm:mt-6">
                 <button
                   onClick={() => setPage(page - 1)}
                   disabled={page === 1}
@@ -243,8 +250,8 @@ export default function DashboardPage() {
                 >
                   Previous
                 </button>
-                <span className="text-sm text-gray-600">
-                  Page {page} of {totalPages} ({total} total)
+                <span className="text-xs sm:text-sm text-gray-600 text-center">
+                  {page} / {totalPages} <span className="hidden sm:inline">({total} total)</span>
                 </span>
                 <button
                   onClick={() => setPage(page + 1)}
