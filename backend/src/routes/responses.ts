@@ -209,21 +209,28 @@ responsesRouter.post('/:id/reject', async (req: Request, res: Response): Promise
 
 responsesRouter.post('/admin/update-token', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { pageId, token } = req.body;
+    const { pageId, token, accountName, avatarUrl } = req.body;
     if (!pageId || !token) {
       res.status(400).json({ error: 'pageId and token required' });
       return;
     }
 
     const encryptedToken = encrypt(token);
-    const result = await query<{ id: string; account_name: string }>(
+
+    let result = await query<{ id: string; account_name: string }>(
       'UPDATE facebook_accounts SET access_token = $1 WHERE account_id = $2 RETURNING id, account_name',
       [encryptedToken, pageId]
     );
 
     if (result.rows.length === 0) {
-      res.status(404).json({ error: 'Account not found' });
-      return;
+      // If account doesn't exist, insert it
+      const insertResult = await query<{ id: string; account_name: string }>(
+        `INSERT INTO facebook_accounts (user_id, account_id, account_name, access_token, avatar_url, connected_at)
+         VALUES ($1, $2, $3, $4, $5, NOW())
+         RETURNING id, account_name`,
+        [req.user!.userId, pageId, accountName || 'Unknown Page', encryptedToken, avatarUrl || null]
+      );
+      result = insertResult;
     }
 
     res.json({ message: 'Token updated', account: result.rows[0] });

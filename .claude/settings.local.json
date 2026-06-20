@@ -32,7 +32,30 @@
       "Bash(grep -v \"^\\\\[INFO\\\\] $\")",
       "Bash(grep -v \"^$\")",
       "Bash(curl -s -X POST https://backboard.railway.app/graphql/v2 -H 'Authorization: Bearer p_IqUZLk1HKqUnE8k_Jy0-8ZgvqcKSOnqehmbDoFSaH' -H 'Content-Type: application/json' -d '{\"query\":\"{ deployments\\(first: 3, input: { serviceId: \\\\\"17267e55-124e-4c7e-b6f2-aca6f8850f10\\\\\", environmentId: \\\\\"058a4d8f-7b2c-40e6-85c8-bfadb3900641\\\\\" }\\) { edges { node { id status meta createdAt } } } }\"}')",
-      "Bash(python3 -m json.tool)"
+      "Bash(python3 -m json.tool)",
+      "Bash(railway up *)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" https://frontend-production-5cf24.up.railway.app/login)",
+      "Bash(curl -s https://fb-reply-manager-production.up.railway.app/health)",
+      "Bash(curl -s -X POST https://fb-reply-manager-production.up.railway.app/api/auth/register -H 'Content-Type: application/json' -d '{\"email\":\"admin@fbreply.com\",\"password\":\"Admin1234\"}')",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('OK - usuario creado' if d.get\\('token'\\) else 'Respuesta: '+json.dumps\\(d\\)\\)\")",
+      "Bash(curl -s -X POST https://fb-reply-manager-production.up.railway.app/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@fbreply.com\",\"password\":\"Admin1234\"}')",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('LOGIN OK' if d.get\\('token'\\) else 'ERROR: '+json.dumps\\(d\\)\\)\")",
+      "Bash(curl -s https://frontend-production-5cf24.up.railway.app/login)",
+      "Bash(curl -s \"https://frontend-production-5cf24.up.railway.app/_next/static/chunks/255-98a0bdaa30757bda.js\")",
+      "Bash(curl -s https://frontend-production-5cf24.up.railway.app/_next/static/chunks/493-87c755e6a628c05f.js)",
+      "Bash(grep -oE '.{40}fb-reply-manager-production[^\"]{0,30}')",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s 'https://graph.facebook.com/v21.0/me?fields=id,name&access_token=EAAhzXGE9ZBzsBRxVL7jJGcH9GB7GUyIJPNdQ0cwYArCQ0GkmqMS7Ya9BkxhqVxkZCJEwiqnm44CXI8htIaPOiZBkchA6ZCMUN3ZCGTI8ES0iUZAU3OrxxpWccj1Mtt232oyGKOLmIuZBFQRCVkf2uMdgrPGEECxoZBaXQvAZAIgKjaDvqj1JePjwsI3zrIg71GtBvMwzOXqcit07ZCalvo')",
+      "Bash(curl -s 'https://graph.facebook.com/v21.0/me/accounts?fields=id,name,category&access_token=EAAhzXGE9ZBzsBRxVL7jJGcH9GB7GUyIJPNdQ0cwYArCQ0GkmqMS7Ya9BkxhqVxkZCJEwiqnm44CXI8htIaPOiZBkchA6ZCMUN3ZCGTI8ES0iUZAU3OrxxpWccj1Mtt232oyGKOLmIuZBFQRCVkf2uMdgrPGEECxoZBaXQvAZAIgKjaDvqj1JePjwsI3zrIg71GtBvMwzOXqcit07ZCalvo')",
+      "Bash(curl -s https://graph.facebook.com/v21.0/me/permissions?access_token=EAAhzXGE9ZBzsBRxVL7jJGcH9GB7GUyIJPNdQ0cwYArCQ0GkmqMS7Ya9BkxhqVxkZCJEwiqnm44CXI8htIaPOiZBkchA6ZCMUN3ZCGTI8ES0iUZAU3OrxxpWccj1Mtt232oyGKOLmIuZBFQRCVkf2uMdgrPGEECxoZBaXQvAZAIgKjaDvqj1JePjwsI3zrIg71GtBvMwzOXqcit07ZCalvo)",
+      "Bash(curl -s https://graph.facebook.com/v21.0/me/permissions?access_token=EAAhzXGE9ZBzsBRZCq1rKXJV6D1pwUW2hY4AY3OxOJwxB7EtfZCh8PJdAvz2ZCDiSlp4C2vKZA5k6ns7QfrNLhpncep5pNVVqZACfmtFOpoHomDKTIZAz52bPOfPEpZC34vZC8b8Kkw3nZCG0BrMBmfdCZAeoGZBA1rnG1BetITO33OrPDAdjBzNzkPCXJg3VD5p98Rk8shO78okXEmNzP5Po)",
+      "Bash(python3 -c \"import sys,json;d=json.load\\(sys.stdin\\);t=d.get\\('access_token',''\\);open\\('/tmp/ll_token.txt','w'\\).write\\(t\\);print\\('Long-lived OK' if t else 'ERROR: '+json.dumps\\(d\\)\\)\")",
+      "Bash(curl -s https://graph.facebook.com/v21.0/me/permissions?access_token=EAAhzXGE9ZBzsBR6a1mv4MZBLHD3erQscSOCNK9n3ICVNqDubWsmhqZCEBH64ccELSmZB91JitqAAihMBQ45zC5dVwtzXS7KzoZBRy6FL9KGjtUeQEZA3UY2ElvVbZAPBvrUFdjkyTZAIZB02s7aXQEVWcjMPS5t6ZCWmrisqnDCa3lcQcOqISZA5SQgVeIuxPnSbFwggJBZA78nF0ZBfn)",
+      "Bash(npx tsc *)",
+      "Bash(curl -s \"https://graph.facebook.com/v21.0/me?fields=id,name&access_token=EAAhzXGE9ZBzsBRZBh23Jx8HOC77YuCyQJ02LSIbFypu6mBbepSuSMicGKlzdbdDrEJJlxOdBzDv1dDKNCrzAWZCBh1VWvihb3quDsA0gP3lzpJPAIPIUtNh9AiEc6FZCXUe2NDZAVKRnWQle9mzOCV9jWgOedYZCQ99Eup8eYQ680rbNzzD81tlOsbPHfy1tfNXGeV8ToI5me2BfAt\")",
+      "Bash(jq)",
+      "Bash(curl -s \"https://graph.facebook.com/v21.0/me/accounts?fields=id,name,access_token&access_token=EAAhzXGE9ZBzsBRZBh23Jx8HOC77YuCyQJ02LSIbFypu6mBbepSuSMicGKlzdbdDrEJJlxOdBzDv1dDKNCrzAWZCBh1VWvihb3quDsA0gP3lzpJPAIPIUtNh9AiEc6FZCXUe2NDZAVKRnWQle9mzOCV9jWgOedYZCQ99Eup8eYQ680rbNzzD81tlOsbPHfy1tfNXGeV8ToI5me2BfAt\")"
     ]
   }
 }
