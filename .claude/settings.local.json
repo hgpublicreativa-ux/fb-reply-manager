@@ -3,7 +3,36 @@
     "allow": [
       "Bash(git init *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git push *)",
+      "Bash(npm install *)",
+      "Bash(railway whoami *)",
+      "Bash(railway link *)",
+      "Bash(node -e \"console.log\\(require\\('crypto'\\).randomBytes\\(48\\).toString\\('hex'\\)\\)\")",
+      "Bash(node -e \"console.log\\(require\\('crypto'\\).randomBytes\\(32\\).toString\\('hex'\\)\\)\")",
+      "Bash(railway variables *)",
+      "Bash(railway domain *)",
+      "Bash(railway add *)",
+      "Bash(railway service *)",
+      "Bash(railway status *)",
+      "Bash(railway logs *)",
+      "Read(//Users/henrygomez/.railway/**)",
+      "Read(//Users/henrygomez/.config/railway/**)",
+      "Bash(curl -s -X POST https://backboard.railway.app/graphql/v2 -H 'Authorization: Bearer p_IqUZLk1HKqUnE8k_Jy0-8ZgvqcKSOnqehmbDoFSaH' -H 'Content-Type: application/json' -d '{\"query\":\"mutation { variableUpsert\\(input: { projectId: \\\\\"f4558044-2e05-480c-9a43-9ce5ce4b4442\\\\\", environmentId: \\\\\"058a4d8f-7b2c-40e6-85c8-bfadb3900641\\\\\", serviceId: \\\\\"fa340969-2370-4350-bd69-b9cffe4f9731\\\\\", name: \\\\\"FRONTEND_URL\\\\\", value: \\\\\"https://frontend-production-5cf24.up.railway.app\\\\\" }\\) }\"}')",
+      "Bash(curl -s -X POST https://backboard.railway.app/graphql/v2 -H 'Authorization: Bearer p_IqUZLk1HKqUnE8k_Jy0-8ZgvqcKSOnqehmbDoFSaH' -H 'Content-Type: application/json' -d '{\"query\":\"mutation { serviceInstanceRedeploy\\(serviceId: \\\\\"17267e55-124e-4c7e-b6f2-aca6f8850f10\\\\\", environmentId: \\\\\"058a4d8f-7b2c-40e6-85c8-bfadb3900641\\\\\"\\) }\"}')",
+      "Bash(curl -s -X POST https://backboard.railway.app/graphql/v2 -H 'Authorization: Bearer p_IqUZLk1HKqUnE8k_Jy0-8ZgvqcKSOnqehmbDoFSaH' -H 'Content-Type: application/json' -d '{\"query\":\"{ serviceInstance\\(serviceId: \\\\\"17267e55-124e-4c7e-b6f2-aca6f8850f10\\\\\", environmentId: \\\\\"058a4d8f-7b2c-40e6-85c8-bfadb3900641\\\\\"\\) { latestDeployment { id status logs { edges { node { message } } } } } }\"}')",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); logs=d.get\\('data',{}\\).get\\('serviceInstance',{}\\).get\\('latestDeployment',{}\\); print\\(logs.get\\('status'\\)\\); [print\\(e['node']['message']\\) for e in \\(logs.get\\('logs'\\) or {}\\).get\\('edges',[]\\)]\")",
+      "Bash(railway run *)",
+      "Bash(brew install *)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\('DATABASE_PUBLIC_URL',''\\)\\)\")",
+      "Bash(curl -s -X POST https://backboard.railway.app/graphql/v2 -H 'Authorization: Bearer p_IqUZLk1HKqUnE8k_Jy0-8ZgvqcKSOnqehmbDoFSaH' -H 'Content-Type: application/json' -d '{\"query\":\"mutation { variableUpsert\\(input: { projectId: \\\\\"f4558044-2e05-480c-9a43-9ce5ce4b4442\\\\\", environmentId: \\\\\"058a4d8f-7b2c-40e6-85c8-bfadb3900641\\\\\", serviceId: \\\\\"17267e55-124e-4c7e-b6f2-aca6f8850f10\\\\\", name: \\\\\"NIXPACKS_NODE_VERSION\\\\\", value: \\\\\"20\\\\\" }\\) }\"}')",
+      "Bash(curl -s -X POST https://backboard.railway.app/graphql/v2 -H 'Authorization: Bearer p_IqUZLk1HKqUnE8k_Jy0-8ZgvqcKSOnqehmbDoFSaH' -H 'Content-Type: application/json' -d '{\"query\":\"mutation { variableUpsert\\(input: { projectId: \\\\\"f4558044-2e05-480c-9a43-9ce5ce4b4442\\\\\", environmentId: \\\\\"058a4d8f-7b2c-40e6-85c8-bfadb3900641\\\\\", serviceId: \\\\\"fa340969-2370-4350-bd69-b9cffe4f9731\\\\\", name: \\\\\"NIXPACKS_NODE_VERSION\\\\\", value: \\\\\"20\\\\\" }\\) }\"}')",
+      "Bash(grep -v \"^\\\\[INFO\\\\] $\")",
+      "Bash(grep -v \"^$\")",
+      "Bash(curl -s -X POST https://backboard.railway.app/graphql/v2 -H 'Authorization: Bearer p_IqUZLk1HKqUnE8k_Jy0-8ZgvqcKSOnqehmbDoFSaH' -H 'Content-Type: application/json' -d '{\"query\":\"{ deployments\\(first: 3, input: { serviceId: \\\\\"17267e55-124e-4c7e-b6f2-aca6f8850f10\\\\\", environmentId: \\\\\"058a4d8f-7b2c-40e6-85c8-bfadb3900641\\\\\" }\\) { edges { node { id status meta createdAt } } } }\"}')",
+      "Bash(python3 -m json.tool)"
     ]
   }
 }
