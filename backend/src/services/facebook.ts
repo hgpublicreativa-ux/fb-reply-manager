@@ -60,7 +60,7 @@ export async function getPageComments(
   try {
     const feedResponse = await axios.get(`${FB_BASE}/${pageId}/feed`, {
       params: {
-        fields: 'id,comments{id,message,from,created_time}',
+        fields: 'id,comments{id,message,from.fields(name,id),created_time}',
         access_token: pageAccessToken,
         limit: 25,
       },
