@@ -150,15 +150,20 @@ responsesRouter.post('/:id/publish', async (req: Request, res: Response): Promis
     }
 
     const commentResult = await query<{
-      comment_id: string;
+      post_id: string;
       facebook_account_id: string;
     }>(
-      `SELECT c.comment_id, c.facebook_account_id
+      `SELECT c.post_id, c.facebook_account_id
        FROM comments c WHERE c.id = $1`,
       [response.comment_id]
     );
 
     const comment = commentResult.rows[0];
+
+    if (!comment.post_id) {
+      res.status(400).json({ error: 'Post ID not available for this comment' });
+      return;
+    }
 
     const acctResult = await query<{ access_token: string }>(
       'SELECT access_token FROM facebook_accounts WHERE id = $1 AND user_id = $2',
@@ -166,7 +171,7 @@ responsesRouter.post('/:id/publish', async (req: Request, res: Response): Promis
     );
 
     const decryptedToken = decrypt(acctResult.rows[0].access_token);
-    await publishComment(comment.comment_id, textToPublish, decryptedToken);
+    await publishComment(comment.post_id, textToPublish, decryptedToken);
 
     await query(
       `UPDATE responses SET status = 'published', actual_text = $1, published_at = NOW(), updated_at = NOW()
