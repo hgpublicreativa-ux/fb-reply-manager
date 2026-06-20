@@ -44,6 +44,7 @@ export function ResponseModal({ comment, onClose, onUpdate }: ResponseModalProps
   }
 
   async function handlePublish() {
+    if (!comment) return;
     if (!responseId && !editedText) {
       setError('Generate or write a response first');
       return;
