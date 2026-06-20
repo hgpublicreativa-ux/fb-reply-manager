@@ -1,0 +1,12 @@
+{
+  "name": "fb-reply-manager",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd backend && npm ci && npm run build",
+    "start": "cd backend && npm start",
+    "install": "cd backend && npm ci"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
