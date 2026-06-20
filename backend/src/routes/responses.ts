@@ -207,15 +207,18 @@ responsesRouter.post('/:id/reject', async (req: Request, res: Response): Promise
   }
 });
 
-responsesRouter.post('/admin/update-token', async (req: Request, res: Response): Promise<void> => {
+export const adminRouter = Router();
+
+adminRouter.post('/update-token', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { pageId, token, accountName, avatarUrl } = req.body;
+    const { pageId, token, accountName, avatarUrl, userId } = req.body;
     if (!pageId || !token) {
       res.status(400).json({ error: 'pageId and token required' });
       return;
     }
 
     const encryptedToken = encrypt(token);
+    const finalUserId = userId || '5f16a787-5fc3-4401-92d0-2071021b9340'; // admin user ID
 
     let result = await query<{ id: string; account_name: string }>(
       'UPDATE facebook_accounts SET access_token = $1 WHERE account_id = $2 RETURNING id, account_name',
@@ -228,7 +231,7 @@ responsesRouter.post('/admin/update-token', async (req: Request, res: Response):
         `INSERT INTO facebook_accounts (user_id, account_id, account_name, access_token, avatar_url, connected_at)
          VALUES ($1, $2, $3, $4, $5, NOW())
          RETURNING id, account_name`,
-        [req.user!.userId, pageId, accountName || 'Unknown Page', encryptedToken, avatarUrl || null]
+        [finalUserId, pageId, accountName || 'Unknown Page', encryptedToken, avatarUrl || null]
       );
       result = insertResult;
     }
