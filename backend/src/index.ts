@@ -9,7 +9,7 @@ dotenv.config();
 import { authRouter } from './routes/auth';
 import { accountsRouter } from './routes/accounts';
 import { commentsRouter } from './routes/comments';
-import { responsesRouter, adminRouter } from './routes/responses';
+import { responsesRouter } from './routes/responses';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -51,7 +51,6 @@ app.use('/api/auth', authRouter);
 app.use('/api/accounts', accountsRouter);
 app.use('/api/comments', commentsRouter);
 app.use('/api/responses', responsesRouter);
-app.use('/api/admin', adminRouter);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
