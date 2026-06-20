@@ -9,7 +9,16 @@ import { accountsApi, authApi } from '../../lib/api';
 import { FacebookAccount, AccountSettings } from '../../types';
 
 const MAX_ACCOUNTS = 40;
-const TONES = ['professional', 'friendly', 'casual', 'formal', 'empathetic'];
+const TONES: { value: string; label: string }[] = [
+  { value: 'comedy', label: '😂 Cómico / Farándula (cordial, chistoso, irónico)' },
+  { value: 'ironic', label: '😏 Irónico / Picante (sarcasmo con clase)' },
+  { value: 'neutral', label: '⚖️ Neutral / Política (sin tomar partido)' },
+  { value: 'friendly', label: '🙂 Amistoso (cercano y cálido)' },
+  { value: 'professional', label: '💼 Profesional (claro y respetuoso)' },
+  { value: 'casual', label: '👋 Casual (relajado e informal)' },
+  { value: 'formal', label: '🎩 Formal (registro cuidado)' },
+  { value: 'empathetic', label: '💗 Empático (comprensivo y cálido)' },
+];
 
 function AccountsContent() {
   const router = useRouter();
@@ -306,7 +315,7 @@ function AccountsContent() {
 
               <div className="p-6 space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Reply Tone</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tono de las respuestas</label>
                   <select
                     value={selectedSettings.settings.tone}
                     onChange={(e) =>
@@ -315,12 +324,15 @@ function AccountsContent() {
                         settings: { ...selectedSettings.settings, tone: e.target.value },
                       })
                     }
-                    className="input capitalize"
+                    className="input"
                   >
                     {TONES.map((t) => (
-                      <option key={t} value={t} className="capitalize">{t}</option>
+                      <option key={t.value} value={t.value}>{t.label}</option>
                     ))}
                   </select>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Elige el estilo por página: farándula con comedia, política con neutral.
+                  </p>
                 </div>
 
                 <div>

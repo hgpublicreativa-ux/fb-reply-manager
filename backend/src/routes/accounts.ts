@@ -74,7 +74,7 @@ accountsRouter.get('/:id/settings', async (req: Request, res: Response): Promise
     );
 
     if (result.rows.length === 0) {
-      res.json({ tone: 'professional', rules: [] });
+      res.json({ tone: 'comedy', rules: [] });
       return;
     }
 
@@ -98,8 +98,8 @@ accountsRouter.put('/:id/settings', async (req: Request, res: Response): Promise
       return;
     }
 
-    const { tone = 'professional', rules = [] } = req.body;
-    const validTones = ['professional', 'friendly', 'casual', 'formal', 'empathetic'];
+    const { tone = 'comedy', rules = [] } = req.body;
+    const validTones = ['comedy', 'ironic', 'neutral', 'friendly', 'professional', 'casual', 'formal', 'empathetic'];
 
     if (!validTones.includes(tone)) {
       res.status(400).json({ error: 'Invalid tone' });
