@@ -55,7 +55,7 @@ commentsRouter.get('/', async (req: Request, res: Response): Promise<void> => {
       status: string | null;
     }>(
       `SELECT
-         c.id, c.comment_id, c.post_id, c.text, c.author_name, c.author_id, c.created_at, c.post_message, c.post_permalink,
+         COALESCE(c.author_name, 'Usuario') AS author_name, c.id, c.comment_id, c.post_id, c.text, c.author_id, c.created_at, c.post_message, c.post_permalink,
          r.id AS response_id, r.suggested_text, r.actual_text, r.status
        FROM comments c
        LEFT JOIN responses r ON r.comment_id = c.id
