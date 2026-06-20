@@ -55,7 +55,8 @@
       "Bash(npx tsc *)",
       "Bash(curl -s \"https://graph.facebook.com/v21.0/me?fields=id,name&access_token=EAAhzXGE9ZBzsBRZBh23Jx8HOC77YuCyQJ02LSIbFypu6mBbepSuSMicGKlzdbdDrEJJlxOdBzDv1dDKNCrzAWZCBh1VWvihb3quDsA0gP3lzpJPAIPIUtNh9AiEc6FZCXUe2NDZAVKRnWQle9mzOCV9jWgOedYZCQ99Eup8eYQ680rbNzzD81tlOsbPHfy1tfNXGeV8ToI5me2BfAt\")",
       "Bash(jq)",
-      "Bash(curl -s \"https://graph.facebook.com/v21.0/me/accounts?fields=id,name,access_token&access_token=EAAhzXGE9ZBzsBRZBh23Jx8HOC77YuCyQJ02LSIbFypu6mBbepSuSMicGKlzdbdDrEJJlxOdBzDv1dDKNCrzAWZCBh1VWvihb3quDsA0gP3lzpJPAIPIUtNh9AiEc6FZCXUe2NDZAVKRnWQle9mzOCV9jWgOedYZCQ99Eup8eYQ680rbNzzD81tlOsbPHfy1tfNXGeV8ToI5me2BfAt\")"
+      "Bash(curl -s \"https://graph.facebook.com/v21.0/me/accounts?fields=id,name,access_token&access_token=EAAhzXGE9ZBzsBRZBh23Jx8HOC77YuCyQJ02LSIbFypu6mBbepSuSMicGKlzdbdDrEJJlxOdBzDv1dDKNCrzAWZCBh1VWvihb3quDsA0gP3lzpJPAIPIUtNh9AiEc6FZCXUe2NDZAVKRnWQle9mzOCV9jWgOedYZCQ99Eup8eYQ680rbNzzD81tlOsbPHfy1tfNXGeV8ToI5me2BfAt\")",
+      "Bash(curl -s \"https://fb-reply-manager-production.up.railway.app/api/admin/update-token\" -X POST -H \"Content-Type: application/json\" -d '{\"pageId\": \"321760877696392\", \"token\": \"EAAhzXGE9ZBzsBR6hvUMPrOTzJLRZBHiF9BZCbBQoKaAvqGF575ALZACnC6PtJNSM0u1Io8nghWeNZC7pqE0hiIlLaQy4tv3yRAU8jaxWvsrkHzlBWYUZAVyl0Hyseb9jWwJl1stC9oKuj3vwdyIpoPKJLX2ZAIFOt0deLLM0yzC9VGkibEgjIxbjeZBWnmaXjOj5vmoOLYNp8Nxy2fRqAL0d\", \"accountName\": \"Famosos TVEC\"}')"
     ]
   }
 }
