@@ -38,3 +38,23 @@ export interface AccountStats {
 }
 
 export type FilterType = 'all' | 'pending' | 'responded';
+
+export interface AccountOverviewItem {
+  id: string;
+  account_name: string;
+  avatar_url: string | null;
+  followers: number | null;
+  totalComments: number;
+  responded: number;
+  pending: number;
+}
+
+export interface OverviewResponse {
+  accounts: AccountOverviewItem[];
+  totals: {
+    followers: number;
+    totalComments: number;
+    responded: number;
+    pending: number;
+  };
+}

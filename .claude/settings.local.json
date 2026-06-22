@@ -66,7 +66,8 @@
       "Bash(curl -s 'https://graph.facebook.com/v21.0/321760877696392/feed?fields=id,story,message,link&limit=2&access_token=EAAhzXGE9ZBzsBR5u0dJlnw6H8DH78fhWI40OiFZC11tDj1muzpe3W71m6NskxCCQktnR7ZCa3KyJHmZBASZC13YxEHMq0KTOpUCgyMI19BiWdenkCxRl461ZBzFVDHF5PFYWnokSiK5kaU6FPCJL43Lw4YLCy63c4Ha8JuMn0AMDemvCHxIsZCZCiVtSaG6bJq6xDlYwVDXAZB3ta5QnnsNdFW59P' -o /tmp/a.json)",
       "Bash(python3 -c \"import json;d=json.load\\(open\\('/tmp/a.json'\\)\\);print\\('ERROR:',d['error']['message']\\) if 'error' in d else print\\('OK posts:',len\\(d.get\\('data',[]\\)\\)\\)\")",
       "Bash(curl -s 'https://graph.facebook.com/v21.0/321760877696392/feed?fields=id,story,message,permalink_url&limit=2&access_token=EAAhzXGE9ZBzsBR5u0dJlnw6H8DH78fhWI40OiFZC11tDj1muzpe3W71m6NskxCCQktnR7ZCa3KyJHmZBASZC13YxEHMq0KTOpUCgyMI19BiWdenkCxRl461ZBzFVDHF5PFYWnokSiK5kaU6FPCJL43Lw4YLCy63c4Ha8JuMn0AMDemvCHxIsZCZCiVtSaG6bJq6xDlYwVDXAZB3ta5QnnsNdFW59P' -o /tmp/b.json)",
-      "Bash(python3 -c \"import json;d=json.load\\(open\\('/tmp/b.json'\\)\\);print\\('ERROR:',d['error']['message']\\) if 'error' in d else [print\\('OK posts:',len\\(d.get\\('data',[]\\)\\)\\) or [print\\(' permalink:',p.get\\('permalink_url',''\\)[:60]\\) for p in d.get\\('data',[]\\)]]\")"
+      "Bash(python3 -c \"import json;d=json.load\\(open\\('/tmp/b.json'\\)\\);print\\('ERROR:',d['error']['message']\\) if 'error' in d else [print\\('OK posts:',len\\(d.get\\('data',[]\\)\\)\\) or [print\\(' permalink:',p.get\\('permalink_url',''\\)[:60]\\) for p in d.get\\('data',[]\\)]]\")",
+      "Bash(curl -s -o /dev/null -w \"frontend HTTP %{http_code}\\\\n\" https://frontend-production-5cf24.up.railway.app/login)"
     ]
   }
 }

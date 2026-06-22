@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Navbar } from '../../components/Navbar';
 import { CommentCard } from '../../components/CommentCard';
 import { ResponseModal } from '../../components/ResponseModal';
+import { OverviewPanel } from '../../components/OverviewPanel';
 import { accountsApi, commentsApi } from '../../lib/api';
 import { FacebookAccount, Comment, AccountStats, FilterType } from '../../types';
 
@@ -22,6 +23,7 @@ export default function DashboardPage() {
   const [syncing, setSyncing] = useState(false);
   const [selectedComment, setSelectedComment] = useState<Comment | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [overviewOpen, setOverviewOpen] = useState(false);
 
   const LIMIT = 20;
 
@@ -161,16 +163,27 @@ export default function DashboardPage() {
                   )}
                 </p>
               </div>
-              <button
-                onClick={handleSync}
-                disabled={syncing}
-                className="btn-secondary flex items-center gap-1.5 flex-shrink-0 text-sm px-3 py-1.5"
-              >
-                <svg className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                <span className="hidden xs:inline sm:inline">{syncing ? 'Syncing...' : 'Sync'}</span>
-              </button>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={() => setOverviewOpen(true)}
+                  className="btn-secondary flex items-center gap-1.5 text-sm px-3 py-1.5"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  <span className="hidden xs:inline sm:inline">Panel</span>
+                </button>
+                <button
+                  onClick={handleSync}
+                  disabled={syncing}
+                  className="btn-secondary flex items-center gap-1.5 text-sm px-3 py-1.5"
+                >
+                  <svg className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span className="hidden xs:inline sm:inline">{syncing ? 'Syncing...' : 'Sync'}</span>
+                </button>
+              </div>
             </div>
 
             {stats && (
@@ -290,6 +303,8 @@ export default function DashboardPage() {
         onClose={() => setSelectedComment(null)}
         onUpdate={handleReplyUpdated}
       />
+
+      <OverviewPanel open={overviewOpen} onClose={() => setOverviewOpen(false)} />
     </>
   );
 }

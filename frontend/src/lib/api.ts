@@ -45,6 +45,7 @@ export const accountsApi = {
   updateSettings: (id: string, settings: { tone: string; rules: string[] }) =>
     api.put(`/accounts/${id}/settings`, settings),
   getStats: (id: string) => api.get(`/accounts/${id}/stats`),
+  getOverview: () => api.get('/accounts/overview'),
 };
 
 export const commentsApi = {

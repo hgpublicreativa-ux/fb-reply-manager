@@ -44,6 +44,35 @@ export async function getPages(accessToken: string): Promise<Array<{ id: string;
   return response.data.data || [];
 }
 
+export async function getPageInfo(
+  pageId: string,
+  pageAccessToken: string
+): Promise<{ followers: number | null; fanCount: number | null }> {
+  try {
+    const response = await axios.get(`${FB_BASE}/${pageId}`, {
+      params: {
+        fields: 'followers_count,fan_count',
+        access_token: pageAccessToken,
+      },
+    });
+    return {
+      followers: response.data.followers_count ?? null,
+      fanCount: response.data.fan_count ?? null,
+    };
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      console.error(
+        `getPageInfo error for page ${pageId}:`,
+        err.response?.status,
+        JSON.stringify(err.response?.data?.error ?? err.message)
+      );
+    } else {
+      console.error(`getPageInfo error for page ${pageId}:`, err);
+    }
+    return { followers: null, fanCount: null };
+  }
+}
+
 type FBComment = { id: string; message: string; from?: { name: string; id: string }; created_time: string; post_id?: string; post_message?: string; post_permalink?: string };
 
 export async function getPageComments(

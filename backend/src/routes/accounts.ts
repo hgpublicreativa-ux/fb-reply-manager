@@ -1,9 +1,74 @@
 import { Router, Request, Response } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import { query } from '../config/database';
+import { getPageInfo } from '../services/facebook';
+import { decrypt } from '../services/encryption';
 
 export const accountsRouter = Router();
 accountsRouter.use(authenticateToken);
+
+// Consolidated overview across all linked accounts: live followers from Facebook
+// + comment stats from the DB, per account and totaled.
+accountsRouter.get('/overview', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const accts = await query<{ id: string; account_name: string; account_id: string; avatar_url: string | null; access_token: string }>(
+      'SELECT id, account_name, account_id, avatar_url, access_token FROM facebook_accounts WHERE user_id = $1 ORDER BY account_name ASC',
+      [req.user!.userId]
+    );
+
+    // Comment stats grouped by account in a single query.
+    const statsRows = await query<{ facebook_account_id: string; total: string; responded: string; pending: string }>(
+      `SELECT c.facebook_account_id,
+        COUNT(DISTINCT c.id) AS total,
+        COUNT(DISTINCT CASE WHEN r.status = 'published' THEN c.id END) AS responded,
+        COUNT(DISTINCT CASE WHEN r.id IS NULL OR r.status = 'pending' THEN c.id END) AS pending
+       FROM comments c
+       LEFT JOIN responses r ON r.comment_id = c.id
+       WHERE c.facebook_account_id = ANY($1::uuid[])
+       GROUP BY c.facebook_account_id`,
+      [accts.rows.map((a) => a.id)]
+    );
+    const statsByAccount = new Map(statsRows.rows.map((s) => [s.facebook_account_id, s]));
+
+    // Followers come from Facebook — fetch all in parallel.
+    const accounts = await Promise.all(
+      accts.rows.map(async (a) => {
+        let followers: number | null = null;
+        try {
+          const info = await getPageInfo(a.account_id, decrypt(a.access_token));
+          followers = info.followers ?? info.fanCount;
+        } catch {
+          followers = null;
+        }
+        const s = statsByAccount.get(a.id);
+        return {
+          id: a.id,
+          account_name: a.account_name,
+          avatar_url: a.avatar_url,
+          followers,
+          totalComments: s ? parseInt(s.total, 10) : 0,
+          responded: s ? parseInt(s.responded, 10) : 0,
+          pending: s ? parseInt(s.pending, 10) : 0,
+        };
+      })
+    );
+
+    const totals = accounts.reduce(
+      (acc, a) => ({
+        followers: acc.followers + (a.followers || 0),
+        totalComments: acc.totalComments + a.totalComments,
+        responded: acc.responded + a.responded,
+        pending: acc.pending + a.pending,
+      }),
+      { followers: 0, totalComments: 0, responded: 0, pending: 0 }
+    );
+
+    res.json({ accounts, totals });
+  } catch (err) {
+    console.error('Overview error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 accountsRouter.get('/', async (req: Request, res: Response): Promise<void> => {
   try {
