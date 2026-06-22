@@ -94,13 +94,13 @@ export default function DashboardPage() {
     if (activeAccount) fetchComments();
   }, [page]);
 
-  // Silent auto-refresh every 2 minutes — picks up new comments without user action
+  // Silent auto-refresh every 30 seconds — picks up new comments without user action
   useEffect(() => {
     if (!activeAccount) return;
     const interval = setInterval(() => {
       fetchComments();
       fetchStats();
-    }, 2 * 60 * 1000);
+    }, 30 * 1000);
     return () => clearInterval(interval);
   }, [activeAccount, fetchComments, fetchStats]);
 

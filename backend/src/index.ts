@@ -114,7 +114,7 @@ async function syncAllAccounts() {
 
 function startAutoSync() {
   syncAllAccounts();
-  setInterval(syncAllAccounts, 5 * 60 * 1000);
+  setInterval(syncAllAccounts, 30 * 1000);
 }
 
 export default app;
