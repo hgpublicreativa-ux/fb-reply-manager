@@ -55,9 +55,12 @@ export async function getPageComments(
     // Fetch the 50 most recent posts (no `since` filter — a post published days ago
     // can still receive new comments today, so filtering by post age misses them).
     // ON CONFLICT DO NOTHING in the DB handles deduplication efficiently.
+    // order(reverse_chronological) → newest comments first. Without it Graph API
+    // returns oldest-first, so with a limit the NEW comments fall off the end and
+    // never sync on active posts.
     const feedResponse = await axios.get(`${FB_BASE}/${pageId}/feed`, {
       params: {
-        fields: 'id,story,message,link,comments.limit(100){id,message,from.fields(name,id),created_time}',
+        fields: 'id,story,message,link,comments.order(reverse_chronological).limit(100){id,message,from.fields(name,id),created_time}',
         access_token: pageAccessToken,
         limit: 50,
       },
@@ -80,7 +83,15 @@ export async function getPageComments(
 
     return comments;
   } catch (err) {
-    console.error(`getPageComments error for page ${pageId}:`, err);
+    if (axios.isAxiosError(err)) {
+      console.error(
+        `getPageComments error for page ${pageId}:`,
+        err.response?.status,
+        JSON.stringify(err.response?.data?.error ?? err.message)
+      );
+    } else {
+      console.error(`getPageComments error for page ${pageId}:`, err);
+    }
     return [];
   }
 }
