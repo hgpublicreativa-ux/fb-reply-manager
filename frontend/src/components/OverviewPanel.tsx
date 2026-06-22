@@ -8,13 +8,14 @@ import { GrowthChart } from './GrowthChart';
 interface OverviewPanelProps {
   open: boolean;
   onClose: () => void;
+  onGoToPending: (accountId: string) => void;
 }
 
 function formatNumber(n: number): string {
   return n.toLocaleString('es-ES');
 }
 
-export function OverviewPanel({ open, onClose }: OverviewPanelProps) {
+export function OverviewPanel({ open, onClose, onGoToPending }: OverviewPanelProps) {
   const [data, setData] = useState<OverviewResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -74,10 +75,10 @@ export function OverviewPanel({ open, onClose }: OverviewPanelProps) {
     view.totalComments > 0 ? Math.round((view.responded / view.totalComments) * 100) : 0;
 
   const cards = [
-    { label: 'Seguidores', value: formatNumber(view.followers), color: 'text-blue-700', bg: 'bg-blue-50' },
-    { label: 'Comentarios', value: formatNumber(view.totalComments), color: 'text-gray-900', bg: 'bg-gray-50' },
-    { label: 'Respondidos', value: formatNumber(view.responded), color: 'text-green-700', bg: 'bg-green-50' },
-    { label: 'Pendientes', value: formatNumber(view.pending), color: 'text-yellow-700', bg: 'bg-yellow-50' },
+    { id: 'followers', label: 'Seguidores', value: formatNumber(view.followers), color: 'text-blue-700', bg: 'bg-blue-50' },
+    { id: 'comments', label: 'Comentarios', value: formatNumber(view.totalComments), color: 'text-gray-900', bg: 'bg-gray-50' },
+    { id: 'responded', label: 'Respondidos', value: formatNumber(view.responded), color: 'text-green-700', bg: 'bg-green-50' },
+    { id: 'pending', label: 'Pendientes', value: formatNumber(view.pending), color: 'text-yellow-700', bg: 'bg-yellow-50' },
   ];
 
   return (
@@ -142,12 +143,34 @@ export function OverviewPanel({ open, onClose }: OverviewPanelProps) {
             <>
               {/* Metric cards */}
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                {cards.map((c) => (
-                  <div key={c.label} className={`card p-3 sm:p-4 ${c.bg}`}>
-                    <p className="text-xs sm:text-sm text-gray-500 font-medium">{c.label}</p>
-                    <p className={`text-xl sm:text-2xl font-bold mt-1 ${c.color}`}>{c.value}</p>
-                  </div>
-                ))}
+                {cards.map((c) => {
+                  // Pendientes card jumps straight to that account's pending comments.
+                  const clickable = c.id === 'pending' && selected && view.pending > 0;
+                  const inner = (
+                    <>
+                      <p className="text-xs sm:text-sm text-gray-500 font-medium flex items-center gap-1">
+                        {c.label}
+                        {clickable && (
+                          <svg className="w-3.5 h-3.5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        )}
+                      </p>
+                      <p className={`text-xl sm:text-2xl font-bold mt-1 ${c.color}`}>{c.value}</p>
+                    </>
+                  );
+                  return clickable ? (
+                    <button
+                      key={c.id}
+                      onClick={() => onGoToPending(selected!.id)}
+                      className={`card p-3 sm:p-4 text-left ${c.bg} hover:ring-2 hover:ring-yellow-300 transition-all`}
+                    >
+                      {inner}
+                    </button>
+                  ) : (
+                    <div key={c.id} className={`card p-3 sm:p-4 ${c.bg}`}>{inner}</div>
+                  );
+                })}
               </div>
 
               {/* Response rate */}
@@ -208,13 +231,13 @@ export function OverviewPanel({ open, onClose }: OverviewPanelProps) {
               {!selected && data && data.accounts.length > 0 && (
                 <div className="card overflow-hidden">
                   <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
-                    <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Por cuenta</p>
+                    <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Por cuenta · toca para ver pendientes</p>
                   </div>
                   <div className="divide-y divide-gray-100 max-h-64 overflow-y-auto">
                     {data.accounts.map((a) => (
                       <button
                         key={a.id}
-                        onClick={() => setSelectedId(a.id)}
+                        onClick={() => onGoToPending(a.id)}
                         className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 transition-colors text-left"
                       >
                         {a.avatar_url ? (
@@ -232,8 +255,11 @@ export function OverviewPanel({ open, onClose }: OverviewPanelProps) {
                         </div>
                         <div className="text-right flex-shrink-0">
                           <p className="text-sm font-semibold text-gray-900">{formatNumber(a.totalComments)}</p>
-                          <p className="text-xs text-yellow-600">{a.pending} pend.</p>
+                          <p className="text-xs text-yellow-600 font-medium">{a.pending} pend.</p>
                         </div>
+                        <svg className="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
                       </button>
                     ))}
                   </div>

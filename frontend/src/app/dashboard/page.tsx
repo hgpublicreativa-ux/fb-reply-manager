@@ -134,6 +134,18 @@ export default function DashboardPage() {
     fetchStats();
   }
 
+  // From the overview panel: jump straight to a page's pending comments.
+  function handleGoToPending(accountId: string) {
+    const acct = accounts.find((a) => a.id === accountId);
+    if (!acct) return;
+    setActiveAccount(acct);
+    localStorage.setItem('activeAccountId', acct.id);
+    setPage(1);
+    setSearch('');
+    setFilter('pending');
+    setOverviewOpen(false);
+  }
+
   const totalPages = Math.ceil(total / LIMIT);
 
   return (
@@ -304,7 +316,11 @@ export default function DashboardPage() {
         onUpdate={handleReplyUpdated}
       />
 
-      <OverviewPanel open={overviewOpen} onClose={() => setOverviewOpen(false)} />
+      <OverviewPanel
+        open={overviewOpen}
+        onClose={() => setOverviewOpen(false)}
+        onGoToPending={handleGoToPending}
+      />
     </>
   );
 }
