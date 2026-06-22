@@ -46,6 +46,8 @@ export const accountsApi = {
     api.put(`/accounts/${id}/settings`, settings),
   getStats: (id: string) => api.get(`/accounts/${id}/stats`),
   getOverview: () => api.get('/accounts/overview'),
+  getHistory: (accountId: string, days = 30) =>
+    api.get('/accounts/overview/history', { params: { accountId, days } }),
 };
 
 export const commentsApi = {

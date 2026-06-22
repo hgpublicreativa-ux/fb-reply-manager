@@ -49,6 +49,16 @@ export interface AccountOverviewItem {
   pending: number;
 }
 
+export interface HistoryPoint {
+  date: string;
+  followers: number | null;
+  comments: number;
+}
+
+export interface HistoryResponse {
+  series: HistoryPoint[];
+}
+
 export interface OverviewResponse {
   accounts: AccountOverviewItem[];
   totals: {

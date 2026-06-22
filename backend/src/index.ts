@@ -11,7 +11,7 @@ import { accountsRouter } from './routes/accounts';
 import { commentsRouter } from './routes/comments';
 import { responsesRouter } from './routes/responses';
 import { query } from './config/database';
-import { getPageComments } from './services/facebook';
+import { getPageComments, getPageInfo } from './services/facebook';
 import { decrypt } from './services/encryption';
 
 const app = express();
@@ -102,6 +102,8 @@ async function syncAllAccounts() {
         }
         totalAdded += added;
         console.log(`[auto-sync] ${account.account_id}: ${fbComments.length} fetched, ${added} new`);
+
+        await recordDailySnapshot(account.id, account.account_id, token);
       } catch (err) {
         console.error(`[auto-sync] failed for account ${account.account_id}:`, err);
       }
@@ -112,8 +114,59 @@ async function syncAllAccounts() {
   }
 }
 
+// Record one snapshot per account per day. Only hits Facebook for followers
+// when today's row is missing, so it's at most one extra call/account/day.
+async function recordDailySnapshot(accountUuid: string, pageId: string, token: string) {
+  try {
+    const existing = await query(
+      'SELECT 1 FROM metric_snapshots WHERE facebook_account_id = $1 AND snapshot_date = CURRENT_DATE',
+      [accountUuid]
+    );
+    if (existing.rowCount && existing.rowCount > 0) return;
+
+    const info = await getPageInfo(pageId, token);
+    const followers = info.followers ?? info.fanCount;
+    const countRes = await query<{ count: string }>(
+      'SELECT COUNT(*) FROM comments WHERE facebook_account_id = $1',
+      [accountUuid]
+    );
+    const totalComments = parseInt(countRes.rows[0].count, 10);
+
+    await query(
+      `INSERT INTO metric_snapshots (facebook_account_id, snapshot_date, followers, total_comments)
+       VALUES ($1, CURRENT_DATE, $2, $3)
+       ON CONFLICT (facebook_account_id, snapshot_date) DO UPDATE
+       SET followers = EXCLUDED.followers, total_comments = EXCLUDED.total_comments`,
+      [accountUuid, followers, totalComments]
+    );
+  } catch (err) {
+    console.error(`[snapshot] failed for account ${pageId}:`, err);
+  }
+}
+
+async function ensureSchema() {
+  try {
+    await query(`
+      CREATE TABLE IF NOT EXISTS metric_snapshots (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        facebook_account_id UUID NOT NULL REFERENCES facebook_accounts(id) ON DELETE CASCADE,
+        snapshot_date DATE NOT NULL,
+        followers INTEGER,
+        total_comments INTEGER,
+        recorded_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(facebook_account_id, snapshot_date)
+      )
+    `);
+    await query(
+      'CREATE INDEX IF NOT EXISTS idx_metric_snapshots_account_date ON metric_snapshots(facebook_account_id, snapshot_date)'
+    );
+  } catch (err) {
+    console.error('[ensureSchema] error:', err);
+  }
+}
+
 function startAutoSync() {
-  syncAllAccounts();
+  ensureSchema().then(() => syncAllAccounts());
   setInterval(syncAllAccounts, 30 * 1000);
 }
 

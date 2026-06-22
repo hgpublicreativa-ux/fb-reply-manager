@@ -57,8 +57,22 @@ CREATE TABLE IF NOT EXISTS responses (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Daily metric snapshots (one row per account per day) for growth charts.
+-- Followers come only from Facebook's current value, so history must be
+-- accumulated going forward — one snapshot recorded per day by the sync loop.
+CREATE TABLE IF NOT EXISTS metric_snapshots (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  facebook_account_id UUID NOT NULL REFERENCES facebook_accounts(id) ON DELETE CASCADE,
+  snapshot_date DATE NOT NULL,
+  followers INTEGER,
+  total_comments INTEGER,
+  recorded_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(facebook_account_id, snapshot_date)
+);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_fb_accounts_user_id ON facebook_accounts(user_id);
+CREATE INDEX IF NOT EXISTS idx_metric_snapshots_account_date ON metric_snapshots(facebook_account_id, snapshot_date);
 CREATE INDEX IF NOT EXISTS idx_comments_fb_account ON comments(facebook_account_id);
 CREATE INDEX IF NOT EXISTS idx_comments_created ON comments(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_responses_comment ON responses(comment_id);

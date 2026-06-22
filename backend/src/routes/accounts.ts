@@ -70,6 +70,71 @@ accountsRouter.get('/overview', async (req: Request, res: Response): Promise<voi
   }
 });
 
+// Daily growth series. accountId=all → summed across the user's accounts.
+// Followers come from recorded snapshots; new comments/day come straight from
+// the comments table (real history, available before snapshots existed).
+accountsRouter.get('/overview/history', async (req: Request, res: Response): Promise<void> => {
+  const accountId = (req.query.accountId as string) || 'all';
+  const days = Math.min(Math.max(parseInt((req.query.days as string) || '30', 10), 7), 90);
+
+  try {
+    // Resolve which account UUIDs belong to this user (and optionally one).
+    const acctRows = accountId === 'all'
+      ? await query<{ id: string }>('SELECT id FROM facebook_accounts WHERE user_id = $1', [req.user!.userId])
+      : await query<{ id: string }>('SELECT id FROM facebook_accounts WHERE user_id = $1 AND id = $2', [req.user!.userId, accountId]);
+
+    if (acctRows.rowCount === 0) {
+      res.status(404).json({ error: 'Account not found' });
+      return;
+    }
+    const ids = acctRows.rows.map((r) => r.id);
+
+    // Followers per day: sum across accounts of the latest snapshot per day.
+    const followersRows = await query<{ d: string; followers: string }>(
+      `SELECT snapshot_date::text AS d, SUM(followers)::bigint AS followers
+       FROM metric_snapshots
+       WHERE facebook_account_id = ANY($1::uuid[])
+         AND snapshot_date >= CURRENT_DATE - ($2::int - 1)
+       GROUP BY snapshot_date
+       ORDER BY snapshot_date`,
+      [ids, days]
+    );
+
+    // New comments per day from the comments table.
+    const commentsRows = await query<{ d: string; n: string }>(
+      `SELECT created_at::date::text AS d, COUNT(*)::bigint AS n
+       FROM comments
+       WHERE facebook_account_id = ANY($1::uuid[])
+         AND created_at >= CURRENT_DATE - ($2::int - 1)
+       GROUP BY created_at::date
+       ORDER BY created_at::date`,
+      [ids, days]
+    );
+
+    const followersByDate = new Map(followersRows.rows.map((r) => [r.d, parseInt(r.followers, 10)]));
+    const commentsByDate = new Map(commentsRows.rows.map((r) => [r.d, parseInt(r.n, 10)]));
+
+    // Build a continuous daily series for the requested window.
+    const series: { date: string; followers: number | null; comments: number }[] = [];
+    const today = new Date();
+    for (let i = days - 1; i >= 0; i--) {
+      const dt = new Date(today);
+      dt.setDate(dt.getDate() - i);
+      const key = dt.toISOString().slice(0, 10);
+      series.push({
+        date: key,
+        followers: followersByDate.has(key) ? followersByDate.get(key)! : null,
+        comments: commentsByDate.get(key) || 0,
+      });
+    }
+
+    res.json({ series });
+  } catch (err) {
+    console.error('History error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 accountsRouter.get('/', async (req: Request, res: Response): Promise<void> => {
   try {
     const result = await query<{

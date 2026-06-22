@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { accountsApi } from '../lib/api';
-import { OverviewResponse } from '../types';
+import { OverviewResponse, HistoryPoint } from '../types';
+import { GrowthChart } from './GrowthChart';
 
 interface OverviewPanelProps {
   open: boolean;
@@ -19,6 +20,8 @@ export function OverviewPanel({ open, onClose }: OverviewPanelProps) {
   const [error, setError] = useState('');
   // null = consolidado (all accounts); otherwise the selected account id
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [history, setHistory] = useState<HistoryPoint[]>([]);
+  const [metric, setMetric] = useState<'followers' | 'comments'>('followers');
 
   const fetchOverview = useCallback(async () => {
     setLoading(true);
@@ -33,12 +36,25 @@ export function OverviewPanel({ open, onClose }: OverviewPanelProps) {
     }
   }, []);
 
+  const fetchHistory = useCallback(async (accountId: string) => {
+    try {
+      const res = await accountsApi.getHistory(accountId, 30);
+      setHistory(res.data.series);
+    } catch {
+      setHistory([]);
+    }
+  }, []);
+
   useEffect(() => {
     if (open) {
       setSelectedId(null);
       fetchOverview();
     }
   }, [open, fetchOverview]);
+
+  useEffect(() => {
+    if (open) fetchHistory(selectedId || 'all');
+  }, [open, selectedId, fetchHistory]);
 
   if (!open) return null;
 
@@ -143,6 +159,49 @@ export function OverviewPanel({ open, onClose }: OverviewPanelProps) {
                 <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${responseRate}%` }} />
                 </div>
+              </div>
+
+              {/* Growth chart */}
+              <div className="card p-3 sm:p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-medium text-gray-700">Crecimiento (30 días)</p>
+                  <div className="flex gap-1 bg-gray-100 p-0.5 rounded-lg">
+                    {([
+                      { key: 'followers', label: 'Seguidores' },
+                      { key: 'comments', label: 'Comentarios' },
+                    ] as { key: 'followers' | 'comments'; label: string }[]).map(({ key, label }) => (
+                      <button
+                        key={key}
+                        onClick={() => setMetric(key)}
+                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                          metric === key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {metric === 'followers' ? (
+                  <GrowthChart
+                    points={history.map((h) => h.followers)}
+                    labels={history.map((h) => h.date)}
+                    type="line"
+                    color="#2563eb"
+                  />
+                ) : (
+                  <GrowthChart
+                    points={history.map((h) => h.comments)}
+                    labels={history.map((h) => h.date)}
+                    type="bar"
+                    color="#16a34a"
+                  />
+                )}
+                {metric === 'followers' && history.every((h) => h.followers === null) && (
+                  <p className="text-xs text-gray-400 text-center mt-1">
+                    El historial de seguidores se acumula desde hoy. Vuelve mañana para ver el crecimiento.
+                  </p>
+                )}
               </div>
 
               {/* Per-account breakdown (only in consolidated view) */}
