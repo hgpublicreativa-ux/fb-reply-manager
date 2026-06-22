@@ -58,9 +58,12 @@ export async function getPageComments(
     // order(reverse_chronological) → newest comments first. Without it Graph API
     // returns oldest-first, so with a limit the NEW comments fall off the end and
     // never sync on active posts.
+    // Use permalink_url, NOT link: the `link` field triggers Graph API error
+    // (#12) "deprecate_post_aggregated_fields_for_attachement" on v3.3+, which
+    // 400s the ENTIRE feed request — so every page returned 0 comments.
     const feedResponse = await axios.get(`${FB_BASE}/${pageId}/feed`, {
       params: {
-        fields: 'id,story,message,link,comments.order(reverse_chronological).limit(100){id,message,from.fields(name,id),created_time}',
+        fields: 'id,story,message,permalink_url,comments.order(reverse_chronological).limit(100){id,message,from.fields(name,id),created_time}',
         access_token: pageAccessToken,
         limit: 50,
       },
@@ -75,7 +78,7 @@ export async function getPageComments(
             ...comment,
             post_id: post.id,
             post_message: post.story || post.message,
-            post_permalink: post.link,
+            post_permalink: post.permalink_url,
           });
         }
       }
