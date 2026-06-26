@@ -42,7 +42,7 @@ export default function DashboardPage() {
       const found = stored ? accts.find((a) => a.id === stored) : null;
       setActiveAccount(found || accts[0]);
     } catch {
-      router.replace('/login');
+      router.replace('/accounts');
     }
   }, [router]);
 
