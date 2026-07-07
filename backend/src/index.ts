@@ -59,6 +59,28 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Triggered by the scheduled GitHub Action (twice a day). With Railway
+// Serverless enabled, this request wakes the container, syncs, and the
+// container goes back to sleep — no 24/7 polling loop needed.
+// If SYNC_TOKEN is set, the caller must send it (query ?token= or
+// Authorization: Bearer) so strangers can't burn Facebook API quota.
+app.post('/sync', async (req, res) => {
+  const expected = process.env.SYNC_TOKEN;
+  const provided =
+    (req.query.token as string) ||
+    (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+  if (expected && provided !== expected) {
+    return res.status(401).json({ error: 'Invalid sync token' });
+  }
+  try {
+    await syncAllAccounts();
+    res.json({ status: 'synced', timestamp: new Date().toISOString() });
+  } catch (err) {
+    console.error('[sync endpoint] error:', err);
+    res.status(500).json({ error: 'Sync failed' });
+  }
+});
+
 app.use((_req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
@@ -166,12 +188,16 @@ async function ensureSchema() {
 }
 
 function startAutoSync() {
-  // Polling Facebook every 30s kept the container busy 24/7 (~2,880 sync
-  // cycles/day) for comments that can wait a few minutes. Default is 5 min;
-  // override with SYNC_INTERVAL_SECONDS if faster replies are ever needed.
-  const intervalSeconds = Number(process.env.SYNC_INTERVAL_SECONDS) || 300;
+  // Sync once on boot: with Railway Serverless, every wake-up (user opening
+  // the dashboard, or the scheduled /sync ping) starts with fresh data.
   ensureSchema().then(() => syncAllAccounts());
-  setInterval(syncAllAccounts, intervalSeconds * 1000);
+  // No polling loop by default — the scheduled GitHub Action calls /sync
+  // twice a day instead, letting the container sleep the rest of the time.
+  // Set SYNC_INTERVAL_SECONDS > 0 to bring back continuous polling.
+  const intervalSeconds = Number(process.env.SYNC_INTERVAL_SECONDS) || 0;
+  if (intervalSeconds > 0) {
+    setInterval(syncAllAccounts, intervalSeconds * 1000);
+  }
 }
 
 export default app;
