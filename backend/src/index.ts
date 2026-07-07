@@ -166,8 +166,12 @@ async function ensureSchema() {
 }
 
 function startAutoSync() {
+  // Polling Facebook every 30s kept the container busy 24/7 (~2,880 sync
+  // cycles/day) for comments that can wait a few minutes. Default is 5 min;
+  // override with SYNC_INTERVAL_SECONDS if faster replies are ever needed.
+  const intervalSeconds = Number(process.env.SYNC_INTERVAL_SECONDS) || 300;
   ensureSchema().then(() => syncAllAccounts());
-  setInterval(syncAllAccounts, 30 * 1000);
+  setInterval(syncAllAccounts, intervalSeconds * 1000);
 }
 
 export default app;
